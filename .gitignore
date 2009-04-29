@@ -1,0 +1,11 @@
+*.o
+LibYAML/LibYAML.bs
+LibYAML/LibYAML.c
+LibYAML/Makefile
+LibYAML/pm_to_blib
+META.yml
+Makefile
+blib
+inc
+pm_to_blib
+t/output
