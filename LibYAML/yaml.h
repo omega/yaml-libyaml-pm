@@ -679,6 +679,9 @@ yaml_event_delete(yaml_event_t *event);
 /** The tag @c !!map is used to denote mapping. */
 #define YAML_MAP_TAG        "tag:yaml.org,2002:map"
 
+/** The tag @c !!set is used for set types */
+#define YAML_SET_TAG        "tag:yaml.org,2002:set"
+
 /** The default scalar tag is @c !!str. */
 #define YAML_DEFAULT_SCALAR_TAG     YAML_STR_TAG
 /** The default sequence tag is @c !!seq. */

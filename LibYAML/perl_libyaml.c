@@ -203,7 +203,6 @@ load_node(perl_yaml_loader_t *loader)
     if (loader->event.type == YAML_MAPPING_START_EVENT) {
         SV *hash_ref;
         char *tag = (char *)loader->event.data.mapping_start.tag;
-
         /* Handle mapping tagged as a Perl hard reference */
         if (tag && strEQ(tag, TAG_PERL_REF))
             return load_scalar_ref(loader);
@@ -211,7 +210,10 @@ load_node(perl_yaml_loader_t *loader)
         /* Handle mapping tagged as a Perl typeglob */
         if (tag && strEQ(tag, TAG_PERL_GLOB))
             return load_glob(loader);
-
+        
+        /* Handle mapping tagged as set to Set::Object */
+        if (tag && strEQ(tag, YAML_SET_TAG))
+            return load_set(loader);
         /* Load the mapping into a hash ref and return it */
         return load_mapping(loader, NULL);
     }
@@ -237,10 +239,56 @@ load_node(perl_yaml_loader_t *loader)
 load_error:
     croak(loader_error_msg(loader, NULL));
 }
+/*
+ * Load a YAML set taggged mapping into a Set::Object
+ */
 
+SV *
+load_set(perl_yaml_loader_t *loader) {
+    
+    SV *class = newSVpvs("Set::Object");
+    /* should we do this? */
+    warn("about to load_module on Set::Object");
+    load_module(PERL_LOADMOD_NOIMPORT, class, 0);
+    
+    warn("we loaded Set::Object I think?");
+    SV *key_node;
+    SV *value_node;
+    dSP;
+    int count;
+    PUSHMARK(SP);
+    mPUSHp("Set::Object", strlen("Set::Object"));
+    PUTBACK;
+    count = call_method("new", G_SCALAR);
+    SPAGAIN;
+    if (count != 1)
+        croak("Big trouble\n");
+    
+    SV *obj = newRV(POPs);
+    //sv_bless(obj, gv_stashpv("Set::Object", TRUE)); 
+    
+    if (!sv_isobject(obj)) {
+        warn("obj is not an object!");
+    }
+    /* Get each key string and value node and put them in the hash */
+    while ((key_node = load_node(loader))) {
+        assert(SvPOK(key_node));
+        value_node = load_node(loader);
+        //obj->insert(key_node);
+        /*
+        hv_store_ent(
+            hash, key_node, value_node, 0
+        );
+        */
+    } 
+    PUTBACK;
+    FREETMPS;
+    return obj;
+}
 /*
  * Load a YAML mapping into a Perl hash
  */
+
 SV *
 load_mapping(perl_yaml_loader_t *loader, char *tag)
 {

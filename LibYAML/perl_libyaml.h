@@ -65,6 +65,9 @@ SV *
 load_node(perl_yaml_loader_t *);
 
 SV *
+load_set(perl_yaml_loader_t *);
+
+SV *
 load_mapping(perl_yaml_loader_t *, char *);
 
 SV *
