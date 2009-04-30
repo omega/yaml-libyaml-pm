@@ -254,6 +254,7 @@ load_set(perl_yaml_loader_t *loader) {
     warn("we loaded Set::Object I think?");
     SV *key_node;
     SV *value_node;
+    SV *obj;
     dSP;
     int count;
     PUSHMARK(SP);
@@ -264,25 +265,32 @@ load_set(perl_yaml_loader_t *loader) {
     if (count != 1)
         croak("Big trouble\n");
     
-    SV *obj = newRV(POPs);
-    //sv_bless(obj, gv_stashpv("Set::Object", TRUE)); 
+    obj = newRV(POPs);
+    sv_bless(obj, gv_stashpv("Set::Object", TRUE)); 
     
     if (!sv_isobject(obj)) {
         warn("obj is not an object!");
     }
-    /* Get each key string and value node and put them in the hash */
+    // Get each key string and value node and put them in the hash
     while ((key_node = load_node(loader))) {
         assert(SvPOK(key_node));
         value_node = load_node(loader);
-        //obj->insert(key_node);
-        /*
-        hv_store_ent(
-            hash, key_node, value_node, 0
-        );
-        */
+        dSP;
+        count = 0;
+        PUSHMARK(SP);
+        EXTEND(SP, 1);
+        
+        XPUSHs(obj);
+        PUTBACK;
+        count = call_method("insert", G_DISCARD);
+        SPAGAIN;
+        if (count != 0)
+            croak("Big trouble!");
     } 
+    /*
     PUTBACK;
     FREETMPS;
+    */
     return obj;
 }
 /*
