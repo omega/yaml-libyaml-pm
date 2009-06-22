@@ -151,7 +151,7 @@ Load(SV *yaml_sv)
          );
 
     loader.anchors = newHV();
-    sv_2mortal(loader.anchors);
+    sv_2mortal((SV*)loader.anchors);
 
     /* Keep calling load_node until end of stream */
     while (1) {
