@@ -2,6 +2,7 @@ use ExtUtils::MakeMaker;
 use strict;
 use Config;
 
+unlink "LibYAML.c" if -f 'LibYAML.c';
 my $obj_files = join ' ', map {
     my $c = $_;
     $c =~ s/\.c$/$Config::Config{_o}/;
